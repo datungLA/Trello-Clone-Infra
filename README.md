@@ -1,6 +1,8 @@
 # Trello Dev Infrastructure
 
-One private Dev stack: React/Nginx, Node.js API, PostgreSQL, and Redis. MinIO is an optional `media` profile for the later attachments milestone. Next.js and the admin interface remain later roadmap work.
+One private Dev stack: React/Nginx, Node.js API, PostgreSQL, and Redis, plus an optional statically exported Next.js landing page. MinIO is an optional `media` profile for the later attachments milestone. The admin interface remains later roadmap work.
+
+The frontend repository now also contains a standalone Next.js static landing page in `landing/`. Its optional Compose `landing` profile serves the exported HTML through Nginx at loopback port 8081, with a 32 MB runtime limit. Build sequentially after tagging the matching RC: `docker compose --profile landing build landing`, then `docker compose --profile landing up -d --no-deps landing`. Tunnel with `ssh -N -L 8081:127.0.0.1:8081 trello-vps-dev`. `LANDING_ORIGIN` and `APP_ORIGIN` are build-time values for this static page; keep them aligned with the browser's tunnel URLs. Public DNS/HTTPS and production routing remain separately gated.
 
 Place the frontend, backend, and infrastructure repositories beside each other. On the Dev VPS, use a dedicated account with Docker access. Inspect existing ports before starting services.
 
@@ -47,6 +49,17 @@ Named volumes preserve PostgreSQL data, Redis state, Dev reset mail, and optiona
 Enable MinIO only when implementing attachments, after setting a strong `MINIO_ROOT_PASSWORD` and selecting a reviewed image tag through `MINIO_IMAGE`. It consumes additional memory. Its console is loopback-only; API integration and bucket authorization belong to that future milestone.
 
 ## Temporary Acceptance Preview
+
+For source changes before a tagged release, run isolated verification on the existing Dev VPS:
+
+```sh
+TRELLO_VERIFY_ENV=dev \
+BACKEND_DIR=/absolute/path/to/Trello-Clone-Backend \
+FRONTEND_DIR=/absolute/path/to/Trello-Clone-Frontend \
+sh scripts/verify-dev.sh
+```
+
+The script requires Docker access and Python 3 on the Dev host. It verifies that the existing network is available, creates a uniquely named disposable PostgreSQL database and private temporary Redis container, installs dependencies into temporary source copies, and runs backend integration tests, frontend tests, and compilation sequentially with memory limits. It reads the running Dev API's database connection privately; credentials are not printed. It removes its temporary database, Redis container, and workspace when finished. Do not run it on Prod. It does not replace browser acceptance, deploy a release, or recreate existing services/volumes. Input directories should be source snapshots without `node_modules` or build output to avoid copying unnecessary data.
 
 The initial implementation was tested using source-mounted containers named `trello-api-check` and `trello-web-check`, with the same private PostgreSQL/Redis services. These are temporary checks, not tagged release images. If they are running, stop them before starting the Compose application on the same port:
 

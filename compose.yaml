@@ -76,6 +76,21 @@ services:
     mem_limit: 64m
     restart: unless-stopped
 
+  landing:
+    image: trello-clone-landing:${RELEASE_TAG:-dev}
+    profiles: [landing]
+    build:
+      context: ../Trello-Clone-Frontend/landing
+      args:
+        APP_URL: ${APP_ORIGIN:-http://localhost:8080}
+        SITE_URL: ${LANDING_ORIGIN:-http://localhost:8081}
+    labels:
+      com.trello.release: ${RELEASE_TAG:-dev}
+    ports:
+      - 127.0.0.1:${LANDING_PORT:-8081}:80
+    mem_limit: 32m
+    restart: unless-stopped
+
   minio:
     image: ${MINIO_IMAGE:-minio/minio:latest}
     profiles: [media]
