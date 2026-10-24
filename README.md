@@ -1,6 +1,6 @@
 # Trello Dev Infrastructure
 
-One private Dev stack: React/Nginx, Node.js API, PostgreSQL, and Redis, plus an optional statically exported Next.js landing page. MinIO is an optional `media` profile for the later attachments milestone. The admin interface remains later roadmap work.
+One private Dev stack: React/Nginx with lazy-loaded administrator and session screens, Node.js API, PostgreSQL, and Redis, plus an optional statically exported Next.js landing page. MinIO is an optional `media` profile for the later attachments milestone. Application administration shares the private SPA endpoint at `/admin` and does not add a runtime service.
 
 The frontend repository now also contains a standalone Next.js static landing page in `landing/`. Its optional Compose `landing` profile serves the exported HTML through Nginx at loopback port 8081, with a 32 MB runtime limit. Build sequentially after tagging the matching RC: `docker compose --profile landing build landing`, then `docker compose --profile landing up -d --no-deps landing`. Tunnel with `ssh -N -L 8081:127.0.0.1:8081 trello-vps-dev`. `LANDING_ORIGIN` and `APP_ORIGIN` are build-time values for this static page; keep them aligned with the browser's tunnel URLs. Public DNS/HTTPS and production routing remain separately gated.
 
@@ -33,6 +33,18 @@ ssh -N -L 8080:127.0.0.1:8080 trello-vps-dev
 ```
 
 Open http://localhost:8080. If that Mac port is occupied, choose another local port and set `APP_ORIGIN` to match before restarting the API. The server port is controlled by `HTTP_PORT`.
+
+## Application Administrator Setup
+
+Application administrators manage accounts and metadata through `/admin`. They are separate from workspace owners and do not gain private board/card access through that role. Initial administrator access must be granted by the Dev server operator to an already registered account; public registration never accepts an administrator role:
+
+```sh
+docker compose exec -T api npm run admin:grant -- administrator@example.com
+```
+
+Use a dedicated Dev testing account. Sign in again after a role change, since existing sessions can be invalidated. User suspension, administrator changes, and workspace/board archive changes require confirmations and are audited. Keep at least one active application administrator. The admin route is served by the same private web endpoint; it does not require another frontend container.
+
+After bootstrapping, run `scripts/admin-smoke.mjs` with `SMOKE_ADMIN_EMAIL` and `SMOKE_ADMIN_PASSWORD` supplied privately in the environment. With Node 24, `node scripts/admin-smoke.mjs http://localhost:8080` verifies admin authentication, counts, paginated metadata/audit, session metadata, and logout. It does not suspend accounts, change roles, or archive existing workspaces/boards. Avoid printing environment values or storing test credentials in Git. Run these checks only on Dev.
 
 ## Development Password Recovery
 
