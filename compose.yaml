@@ -37,13 +37,16 @@ services:
     labels:
       com.trello.release: ${RELEASE_TAG:-dev}
     environment:
-      NODE_ENV: development
+      NODE_ENV: ${NODE_ENV:-development}
       PORT: 3000
       DATABASE_URL: postgresql://trello:${POSTGRES_PASSWORD}@postgres:5432/trello
       REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
       APP_ORIGIN: ${APP_ORIGIN:-http://localhost:8080}
+      APP_ORIGINS: ${APP_ORIGINS:-}
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      TRUST_PROXY: ${TRUST_PROXY:-1}
+      BOOTSTRAP_SETUP_TOKEN: ${BOOTSTRAP_SETUP_TOKEN:-}
       DEV_MAIL_DIR: /app/dev-mail
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       MAIL_FROM: ${MAIL_FROM:-}
@@ -72,6 +75,7 @@ services:
       - 127.0.0.1:${HTTP_PORT:-8080}:80
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/security-headers.conf:/etc/nginx/security-headers.conf:ro
     depends_on:
       api:
         condition: service_healthy

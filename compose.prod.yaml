@@ -1,0 +1,29 @@
+# Prepared configuration only. Deployment requires the project's production approval gates.
+name: trello-prod
+services:
+  api:
+    environment:
+      NODE_ENV: production
+      COOKIE_SECURE: "true"
+      APP_ORIGIN: https://trello-app.learnvibecode.online
+      APP_ORIGINS: https://trello-admin.learnvibecode.online
+      TRUST_PROXY: "1"
+      DEV_MAIL_DIR: ""
+  gateway:
+    image: nginx:1.28-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/production.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/cloudflare-realip.conf:/etc/nginx/cloudflare-realip.conf:ro
+      - ${TLS_CERT_DIR:?Set TLS_CERT_DIR to private certificate directory}:/etc/nginx/tls:ro
+    depends_on:
+      web:
+        condition: service_started
+      landing:
+        condition: service_started
+      api:
+        condition: service_healthy
+    mem_limit: 32m
+    restart: unless-stopped

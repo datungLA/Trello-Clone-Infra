@@ -37,11 +37,11 @@ REDIS_URL="redis://$redis:6379"
 export TEST_DATABASE_URL REDIS_URL
 
 printf '%s\n' 'Installing backend dependencies in a temporary Dev workspace.'
-docker run --rm --memory 384m -e NODE_OPTIONS=--max-old-space-size=192 -v "$work/backend:/app" -w /app node:24-alpine npm ci --ignore-scripts --no-audit --no-fund
+docker run --rm --user "$(id -u):$(id -g)" -e npm_config_cache=/tmp/npm-cache --memory 384m -e NODE_OPTIONS=--max-old-space-size=192 -v "$work/backend:/app" -w /app node:24-alpine npm ci --ignore-scripts --no-audit --no-fund
 printf '%s\n' 'Running backend integration checks against a disposable database and Redis.'
-docker run --rm --network "$network" --memory 256m -e NODE_OPTIONS=--max-old-space-size=160 -e TEST_DATABASE_URL -e REDIS_URL -v "$work/backend:/app" -w /app node:24-alpine npm test
+docker run --rm --user "$(id -u):$(id -g)" --network "$network" --memory 256m -e NODE_OPTIONS=--max-old-space-size=160 -e TEST_DATABASE_URL -e REDIS_URL -v "$work/backend:/app" -w /app node:24-alpine npm test
 printf '%s\n' 'Installing frontend dependencies in a temporary Dev workspace.'
-docker run --rm --memory 384m -e NODE_OPTIONS=--max-old-space-size=192 -v "$work/frontend:/app" -w /app node:24-alpine npm ci --no-audit --no-fund
+docker run --rm --user "$(id -u):$(id -g)" -e npm_config_cache=/tmp/npm-cache --memory 384m -e NODE_OPTIONS=--max-old-space-size=192 -v "$work/frontend:/app" -w /app node:24-alpine npm ci --no-audit --no-fund
 printf '%s\n' 'Running frontend checks and compilation on Dev.'
-docker run --rm --memory 256m -e NODE_OPTIONS=--max-old-space-size=160 -v "$work/frontend:/app" -w /app node:24-alpine sh -c 'npm test && npm run build'
+docker run --rm --user "$(id -u):$(id -g)" --memory 256m -e NODE_OPTIONS=--max-old-space-size=160 -v "$work/frontend:/app" -w /app node:24-alpine sh -c 'npm test && npm run build'
 printf '%s\n' 'PASS: isolated Dev integration tests, frontend tests, and compilation.'

@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
-import { randomUUID } from 'node:crypto';
 
 const origin = process.argv[2] || 'http://localhost:8080';
+if (process.env.TRELLO_SMOKE_ENV !== 'dev') throw new Error('Run only on Dev with TRELLO_SMOKE_ENV=dev.');
+const email = process.env.SMOKE_USER_EMAIL;
+const password = process.env.SMOKE_USER_PASSWORD;
+if (!email || !password) throw new Error('Supply a dedicated verified Dev account privately in SMOKE_USER_EMAIL and SMOKE_USER_PASSWORD.');
 let token;
 const cookies = new Map();
 
@@ -35,13 +38,9 @@ assert.ok(asset, 'Compiled frontend script is linked');
 assert.equal((await fetch(new URL(asset[1], origin))).status, 200);
 assert.equal((await request('/health')).status, 'ok');
 
-const account = await request('/auth/register', {
+const account = await request('/auth/login', {
   method: 'POST',
-  body: {
-    email: `smoke-${randomUUID()}@trello.test`,
-    displayName: 'Dev smoke check',
-    password: randomUUID() + randomUUID(),
-  },
+  body: { email, password },
 });
 token = account.accessToken;
 assert.equal((await request('/auth/me')).id, account.user.id);
