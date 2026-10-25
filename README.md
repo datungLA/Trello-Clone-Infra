@@ -48,7 +48,11 @@ After bootstrapping, run `scripts/admin-smoke.mjs` with `SMOKE_ADMIN_EMAIL` and 
 
 ## Development Password Recovery
 
-Reset links are delivered to files in the API's private `/app/dev-mail` volume. Inspect these through SSH/Docker as the server operator, not a public HTTP endpoint. Use throwaway learning accounts. Raw passwords are never delivered or logged.
+When `RESEND_API_KEY` and `MAIL_FROM` are configured in the private Dev environment, password resets use Resend's HTTPS API. Use a verified sending domain and a Sending access key scoped to that domain. Keep the key in server secrets, never in Git, frontend code, or Docker build arguments. Provider errors return the same generic reset response and are logged without credentials, recipient addresses, or reset tokens.
+
+Without a Resend key, non-production reset links are delivered to the API's private `/app/dev-mail` volume. Inspect these through SSH/Docker as the operator, not a public HTTP endpoint. Tests use this private mailbox or a mocked HTTPS transport and never send real emails. Raw passwords are never delivered or logged.
+
+Reset links use `APP_ORIGIN`. Dev currently uses `http://localhost:8080`, so open the SSH tunnel before following a link. A future approved public deployment must set its real HTTPS application origin. Adding password-reset delivery does not implement reminder scheduling, email invitations, or broadcasts.
 
 ## Tests and Storage
 

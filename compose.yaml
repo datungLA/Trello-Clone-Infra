@@ -45,6 +45,8 @@ services:
       APP_ORIGIN: ${APP_ORIGIN:-http://localhost:8080}
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
       DEV_MAIL_DIR: /app/dev-mail
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      MAIL_FROM: ${MAIL_FROM:-}
     volumes:
       - dev-mail:/app/dev-mail
     depends_on:
