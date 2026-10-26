@@ -55,6 +55,12 @@ const second = await request(`/boards/${board.id}/lists`, { method: 'POST', body
 const card = await request(`/lists/${first.id}/cards`, { method: 'POST', body: { title: 'Verify persisted move' } });
 const label = await request(`/boards/${board.id}/labels`, { method: 'POST', body: { name: 'Smoke verified', color: '#0055cc' } });
 await request(`/cards/${card.id}`, { method: 'PATCH', body: { labelIds: [label.id], assigneeIds: [account.user.id], coverColor: '#deebff', dueDate: '2030-01-15T12:00:00.000Z', completed: true } });
+let myTask = (await request('/me/tasks')).find(task => task.id === card.id);
+assert.equal(myTask.boardId, board.id);
+assert.equal(myTask.completed, true);
+await request(`/cards/${card.id}`, { method: 'PATCH', body: { completed: false } });
+assert.equal((await request('/me/tasks')).find(task => task.id === card.id).completed, false);
+await request(`/cards/${card.id}`, { method: 'PATCH', body: { completed: true } });
 const checklist = await request(`/cards/${card.id}/checklists`, { method: 'POST', body: { title: 'Release checks' } });
 const item = await request(`/checklists/${checklist.id}/items`, { method: 'POST', body: { title: 'Verify rich card persistence' } });
 await request(`/checklist-items/${item.id}`, { method: 'PATCH', body: { completed: true } });
@@ -67,7 +73,9 @@ assert.ok((await request(`/boards/${board.id}/views`)).some(saved => saved.id ==
 await request(`/cards/${card.id}`, { method: 'PATCH', body: { description: 'Created through Nginx against real PostgreSQL.' } });
 await request(`/cards/${card.id}/move`, { method: 'POST', body: { listId: second.id, position: 0 } });
 await request(`/cards/${card.id}`, { method: 'PATCH', body: { archived: true } });
+assert.ok(!(await request('/me/tasks')).some(task => task.id === card.id));
 await request(`/cards/${card.id}`, { method: 'PATCH', body: { archived: false } });
+assert.ok((await request('/me/tasks')).some(task => task.id === card.id));
 
 const csrf = (await request('/auth/csrf')).csrfToken;
 const renewed = await request('/auth/renew', { method: 'POST', body: {}, csrf });
@@ -90,4 +98,4 @@ assert.ok(details.activity.length > 0);
 await request('/auth/logout', { method: 'POST', body: {}, csrf });
 const signedOut = await fetch(`${origin}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
 assert.equal(signedOut.status, 401);
-console.log('PASS: frontend assets, proxy health, signup, workspace/board/list/card creation, rich metadata, checklist, comments/activity, saved views, WIP limit, move, archive/restore, refresh, persistence, and logout.');
+console.log('PASS: frontend assets, proxy health, login, workspace/board/list/card creation, rich metadata, my tasks/completion, checklist, comments/activity, saved views, WIP limit, move, archive/restore, refresh, persistence, and logout.');

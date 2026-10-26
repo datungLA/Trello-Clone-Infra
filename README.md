@@ -30,6 +30,8 @@ The default browser origin is `http://localhost:8080` through SSH. For this loop
 
 ## Build and Run on Dev
 
+The user application includes `/my-tasks`, aggregating assigned active cards across current workspace memberships. Closed boards and archived cards/lists/workspaces are excluded. Completion uses the existing card API; tasks are grouped by local calendar day and linked to their original card. The proxy smoke checks assignment visibility, completion persistence and archive exclusion using disposable Dev data.
+
 Follow the project release workflow: tag the release candidate before building a release. Build services sequentially on the 1 GB VPS:
 
 ```sh
