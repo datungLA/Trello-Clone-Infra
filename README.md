@@ -32,6 +32,8 @@ The default browser origin is `http://localhost:8080` through SSH. For this loop
 
 The user application includes `/my-tasks`, aggregating assigned active cards across current workspace memberships. Closed boards and archived cards/lists/workspaces are excluded. Completion uses the existing card API; tasks are grouped by local calendar day and linked to their original card. The proxy smoke checks assignment visibility, completion persistence and archive exclusion using disposable Dev data.
 
+Workspace owners can remove members from Members or the board Share dialog. Removal clears assignments, revokes older pending invitations for that workspace/email, and records workspace activity; a fresh invitation is required to rejoin. Application administrator access does not grant workspace ownership, and the last owner remains protected. The UI uses keyboard/typeahead dropdowns and hides scrollbar tracks while preserving scrolling and focusable board/list regions. Keep form alignment, nonshrinking card minimum heights and dark-theme semantic colors when changing styles.
+
 Follow the project release workflow: tag the release candidate before building a release. Build services sequentially on the 1 GB VPS:
 
 ```sh
