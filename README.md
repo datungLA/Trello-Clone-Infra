@@ -34,6 +34,8 @@ The user application includes `/my-tasks`, aggregating assigned active cards acr
 
 Workspace owners can remove members from Members or the board Share dialog. Removal clears assignments, revokes older pending invitations for that workspace/email, and records workspace activity; a fresh invitation is required to rejoin. Application administrator access does not grant workspace ownership, and the last owner remains protected. The UI uses keyboard/typeahead dropdowns and hides scrollbar tracks while preserving scrolling and focusable board/list regions. Keep form alignment, nonshrinking card minimum heights and dark-theme semantic colors when changing styles.
 
+The user app adapts to both width and height. Portrait phones show a board/list preview with bottom navigation; short windows use a single compact toolbar and independent list scrolling. A full-screen board picker and responsive filter sheet keep controls reachable. Card details fill narrow screens and use a400px panel only when at least320px of board remains. Explicit touch handles require a hold before dragging and support edge scrolling/cancellation; card/list settings retain menu-based movement. Rotation retains mounted drafts and board state. Offline saves retain input for retry and never claim synchronization before success. Validate real-device keyboard/safe-area behavior separately from emulated viewport acceptance.
+
 Follow the project release workflow: tag the release candidate before building a release. Build services sequentially on the 1 GB VPS:
 
 ```sh
