@@ -9,6 +9,8 @@ services:
       APP_ORIGINS: https://trello-admin.learnvibecode.online
       TRUST_PROXY: "1"
       DEV_MAIL_DIR: ""
+      BACKUP_ENVIRONMENT: production
+      BACKUP_ORIGIN: https://trello-admin.learnvibecode.online
   gateway:
     image: nginx:1.28-alpine
     ports:

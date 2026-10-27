@@ -3,4 +3,6 @@
 !.env.example
 dev-mail/
 backups/
+backup-private/
+backup-config/
 test-results/

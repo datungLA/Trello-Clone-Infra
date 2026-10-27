@@ -84,6 +84,23 @@ Named volumes preserve PostgreSQL data, Redis state, Dev reset mail, and optiona
 
 Enable MinIO only when implementing attachments, after setting a strong `MINIO_ROOT_PASSWORD` and selecting a reviewed image tag through `MINIO_IMAGE`. It consumes additional memory. Its console is loopback-only; API integration and bucket authorization belong to that future milestone.
 
+## Google Drive Backup Administration
+
+The optional `/admin/backup` dashboard is restricted to application super administrators. It uses English Connection, Configuration, History and Guide tabs. OAuth credentials are supplied to the API privately; the UI never reads the client secret. A connection requires the owner's Google consent, not just a client ID and secret. Google Drive remains an additional destination alongside the existing encrypted host backups.
+
+For Dev, register `http://localhost:8080/api/backup/oauth/callback` as an **Authorized redirect URI** on a Google OAuth **Web application** client. This server-side redirect flow does not require an Authorized JavaScript origin. Enable the Drive API, configure the consent audience/test user, then open `http://localhost:8080/admin/backup` through the SSH tunnel and choose **Connect Google Drive**. The dashboard displays the exact configured callback URI. The requested `drive.file` permission limits access to files created or explicitly opened with this app, rather than all of the user's Drive. A Testing-mode Google app may require renewed consent; publishing is not a guarantee that tokens never expire.
+
+Runtime configuration:
+
+- `GOOGLE_DRIVE_CLIENT_ID` / `GOOGLE_DRIVE_CLIENT_SECRET`: private server credentials.
+- `BACKUP_TOKEN_KEY`: independent 32-byte hex token-encryption key; preserve it across releases so stored OAuth tokens remain usable.
+- `BACKUP_ORIGIN`: exact browser origin for the callback; Dev defaults to `http://localhost:8080`. An approved production installation must use its real HTTPS admin origin, a separately registered redirect, and `BACKUP_ENVIRONMENT=production`.
+- `BACKUP_PRIVATE_DIR`: dedicated certificate-only host directory mounted read-only. Supply `recovery-cert.pem`, the public recovery certificate. Never upload the recovery private key.
+- `BACKUP_CONFIG_SOURCE`: dedicated read-only directory containing only approved nonsecret infrastructure configuration. Never mount the Docker socket, entire secrets directory, local credential vault, private keys or OAuth token stores.
+- The `backup-work` named volume provides temporary staging owned by the non-root API user. Preserve named volumes during deployments.
+
+Archives are encrypted before leaving the server. Database and allowlisted infrastructure configuration are supported; uploads remain unavailable until attachment storage exists. Schedule and retention apply only to the app's own environment-specific backup namespace. A successful upload is not a restore acceptance: practice decryption and restoration into an isolated disposable database with the local-only recovery private key, retaining bootstrap state and verifying access controls. No live restore or automatic setup reopening is exposed by this page.
+
 ## Temporary Acceptance Preview
 
 For source changes before a tagged release, run isolated verification on the existing Dev VPS:

@@ -50,8 +50,19 @@ services:
       DEV_MAIL_DIR: /app/dev-mail
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       MAIL_FROM: ${MAIL_FROM:-}
+      GOOGLE_DRIVE_CLIENT_ID: ${GOOGLE_DRIVE_CLIENT_ID:-}
+      GOOGLE_DRIVE_CLIENT_SECRET: ${GOOGLE_DRIVE_CLIENT_SECRET:-}
+      BACKUP_TOKEN_KEY: ${BACKUP_TOKEN_KEY:-}
+      BACKUP_ENVIRONMENT: ${BACKUP_ENVIRONMENT:-dev}
+      BACKUP_ORIGIN: ${BACKUP_ORIGIN:-http://localhost:8080}
+      BACKUP_RECIPIENT_CERT_FILE: /app/backup-private/recovery-cert.pem
+      BACKUP_CONFIG_DIR: /app/backup-config
+      BACKUP_WORK_DIR: /app/backup-work
     volumes:
       - dev-mail:/app/dev-mail
+      - backup-work:/app/backup-work
+      - ${BACKUP_PRIVATE_DIR:-./backup-private}:/app/backup-private:ro
+      - ${BACKUP_CONFIG_SOURCE:-./backup-config}:/app/backup-config:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -115,4 +126,5 @@ volumes:
   postgres-data:
   redis-data:
   dev-mail:
+  backup-work:
   minio-data:
